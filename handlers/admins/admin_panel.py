@@ -11,6 +11,7 @@ from playhouse.shortcuts import model_to_dict
 from database.connections import add_user
 from keyboards.inline.cancel import cancel
 from keyboards.inline.for_admin import inc_dec
+# from data.config import ADMINS,ADMINS_NAME
 from loader import dp, db, bot
 from keyboards.default.admins_menu import menu
 from aiogram.types import ReplyKeyboardRemove
@@ -20,24 +21,29 @@ from database.models import *
 from database.connections import *
 from filters.private_chat import IsPrivate
 
-ADMINS = []
-ADMINS_NAME = []
+
+ADMINS=[]
+ADMINS_NAME=[]
 try:
-    @dp.message_handler(IsPrivate(),text="!checkadmindb")
-    async def check_db_for_admin(msg: types.Message):
-        adm = Admins.select()
-        aaa = [model_to_dict(item) for item in adm]
-        for i in aaa:
-            ADMINS.append(i["admin_id"])
-            ADMINS_NAME.append(i["admin_name"])
-        await asyncio.sleep(3)
-        await msg.answer("✅",disable_notification=True)
-        print(ADMINS,ADMINS_NAME)
-    @dp.message_handler(IsPrivate(), commands="admin", user_id=ADMINS)
+    # @dp.message_handler(IsPrivate(),text="!checkadmindb")
+    # async def check_db_for_admin(msg: types.Message):
+    #     adm = Admins.select()
+    #     aaa = [model_to_dict(item) for item in adm]
+    #     for i in aaa:
+    #         ADMINS.append(i["admin_id"])
+    #         ADMINS_NAME.append(i["admin_name"])
+    #     await msg.answer("✅")
+    #     print(ADMINS,ADMINS_NAME)
+
+    @dp.message_handler(IsPrivate(), commands="admin")
     async def show_menu(msg: types.Message):
-        # call_db_admin = Admins.select()
-        # list_admin = [model_to_dict(item) for item in call_db_admin]
+        call_db_admin = Admins.select()
+        list_admin = [model_to_dict(item) for item in call_db_admin]
+        for admin in list_admin:
+            ADMINS.append(admin["admin_id"])
+            ADMINS_NAME.append(admin["admin_name"])
         await msg.answer(text=f'Xush kelibsiz {msg.from_user.full_name} - ADMIN', reply_markup=menu)
+        print(ADMINS,ADMINS_NAME)
 
 
     @dp.message_handler(IsPrivate(),text="👤 Foydalanuvchilar", user_id=ADMINS)
@@ -92,7 +98,6 @@ try:
         data = await state.get_data()
         admin_id = data["admin_id"]
         admin_name = data["admin_name"]
-        print(admin_name,admin_id)
         await add_admin(admin_id,admin_name,msg.from_user.id)
         x1 = data["message_id"]
         x2 = data["t"]
