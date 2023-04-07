@@ -20,17 +20,23 @@ from database.models import *
 from database.connections import *
 from filters.private_chat import IsPrivate
 
-
 ADMINS = []
 ADMINS_NAME = []
-def check_db_admin():
-
-
-schedule.every(5).seconds.do(check_db_admin)
-
 try:
+    @dp.message_handler(IsPrivate(),text="!checkadmindb")
+    async def check_db_for_admin(msg: types.Message):
+        adm = Admins.select()
+        aaa = [model_to_dict(item) for item in adm]
+        for i in aaa:
+            ADMINS.append(i["admin_id"])
+            ADMINS_NAME.append(i["admin_name"])
+        await asyncio.sleep(3)
+        await msg.answer("✅",disable_notification=True)
+        print(ADMINS,ADMINS_NAME)
     @dp.message_handler(IsPrivate(), commands="admin", user_id=ADMINS)
     async def show_menu(msg: types.Message):
+        # call_db_admin = Admins.select()
+        # list_admin = [model_to_dict(item) for item in call_db_admin]
         await msg.answer(text=f'Xush kelibsiz {msg.from_user.full_name} - ADMIN', reply_markup=menu)
 
 
